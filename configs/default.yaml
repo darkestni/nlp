@@ -1,0 +1,46 @@
+# Sarcasm-R1-Lite 默认配置
+# 被 train/grpo_train.py 与 eval/evaluate.py 共同读取
+
+model:
+  # 基座模型：Qwen2.5-0.5B（单卡 10GB+ 可训）
+  # 显存充裕可换 Qwen2.5-1.5B；显存紧张可开 LoRA
+  name: "Qwen/Qwen2.5-0.5B-Instruct"
+  max_length: 1024
+
+data:
+  # 数据集选择：sarc（Reddit 大规模）或 isarcasm（小而精、人工标注）
+  source: "isarcasm"        # 本地小规模走通用 isarcasm；要大数据量改 "sarc"
+  max_train_samples: 4000
+  max_eval_samples: 500
+  test_size: 0.1            # 训练集里切出的验证集比例
+
+grpo:
+  # GRPO 训练超参
+  output_dir: "outputs/grpo_run"
+  num_generations: 4        # 每个 prompt 的采样数 G（GRPO 分组大小）
+  learning_rate: 1.0e-5
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 8   # 等效 batch = 16
+  num_train_epochs: 1
+  max_prompt_length: 256
+  max_completion_length: 384       # 推理链 + 答案的总长度上限
+  temperature: 0.9
+  beta: 0.04                       # KL 正则系数
+  save_steps: 200
+  logging_steps: 10
+
+eval:
+  # 评测
+  batch_size: 8
+  max_new_tokens: 384
+
+reward_weights:
+  # 奖励函数各项权重（见 train/reward_fn.py）
+  answer_correct: 1.0
+  format_valid: 0.3
+  reasoning_present: 0.3
+  reasoning_redundant: -0.1
+  contradiction_penalty: -0.5
+
+run:
+  seed: 42

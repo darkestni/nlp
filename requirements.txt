@@ -1,0 +1,24 @@
+# Sarcasm-R1-Lite 依赖
+# Python >= 3.10
+
+# ---- 核心：训练 / 推理 ----
+torch>=2.1.0
+transformers>=4.45.0
+accelerate>=0.34.0
+trl>=0.12.0          # GRPOTrainer 在 0.12+ 提供
+
+# ---- 数据处理 ----
+datasets>=2.20.0
+pandas>=2.0.0
+numpy>=1.24.0
+
+# ---- 配置与 CLI ----
+pyyaml>=6.0
+tqdm>=4.66.0
+
+# ---- 评测 ----
+scikit-learn>=1.3.0
+matplotlib>=3.7.0
+
+# ---- 可选：合成数据（调大模型 API 生成冷启动样本）----
+# openai>=1.0.0        # 用于调 DeepSeek/OpenAI 兼容接口生成合成数据

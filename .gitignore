@@ -1,0 +1,31 @@
+# 数据与模型产物（不进 git）
+data/raw/
+data/processed/
+*.jsonl
+!data/sample.jsonl
+*.pt
+*.bin
+*.safetensors
+
+# 训练输出
+outputs/
+runs/
+wandb/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# 大文件
+results/*.png
+!results/experiment_template.md
