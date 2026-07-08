@@ -66,6 +66,8 @@ def main():
     ap.add_argument("--config", default=str(ROOT / "configs" / "default.yaml"))
     ap.add_argument("--train-file", default=str(ROOT / "data" / "processed" / "train.jsonl"))
     ap.add_argument("--output-dir", default=None, help="覆盖 config 里的 output_dir")
+    ap.add_argument("--sft-checkpoint", default=None,
+                    help="SFT 冷启动 checkpoint 路径（推荐用，作为 GRPO 起点）")
     ap.add_argument("--smoke-test", action="store_true",
                     help="只 import 库 + 载模型，不训练（验证环境用）")
     args = ap.parse_args()
@@ -79,7 +81,8 @@ def main():
     print("=" * 60)
     print("Sarcasm-R1-Lite · GRPO 训练")
     print("=" * 60)
-    print(f"模型: {model_cfg['name']}")
+    model_name = args.sft_checkpoint or model_cfg["name"]
+    print(f"模型: {model_name}" + (" (从 SFT 接续)" if args.sft_checkpoint else " (基座)"))
     print(f"输出: {grpo_cfg['output_dir']}")
 
     # ---- 1. 读数据 ----
@@ -92,11 +95,11 @@ def main():
     prompts, gold_labels = build_grpo_dataset(records)
 
     # ---- 2. 加载模型与 tokenizer ----
-    print("\n[2/4] 加载模型与 tokenizer（需要联网下载权重）...")
+    print("\n[2/4] 加载模型与 tokenizer...")
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
-    model_name = model_cfg["name"]
+    # model_name 已在上方根据 sft_checkpoint 确定
     tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
