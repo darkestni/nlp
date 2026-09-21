@@ -1,0 +1,58 @@
+{
+  "recipe": "v2: SFT cold start + GRPO(answer_correct x3.0, G=6, T=1.0, ~500 steps)",
+  "dataset": "SemEval 2018 Task3 (train 2862 / test 784)",
+  "zero_shot_baseline": {
+    "/lab/haoq_lab/cse12312606/llm-train/hf-models/qwen2.5-0.5b-instruct": {
+      "n": 784,
+      "accuracy": 0.6033163265306123,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "format_compliance": 0.0,
+      "avg_reasoning_lines": 0.0,
+      "pred_distribution": {
+        "not_sarcastic": 784
+      },
+      "gold_distribution": {
+        "not_sarcastic": 473,
+        "sarcastic": 311
+      }
+    }
+  },
+  "after": {
+    "outputs/v2_grpo": {
+      "n": 784,
+      "accuracy": 0.7130102040816326,
+      "precision": 0.6319018404907976,
+      "recall": 0.662379421221865,
+      "f1": 0.6467817896389326,
+      "format_compliance": 1.0,
+      "avg_reasoning_lines": 2.0,
+      "pred_distribution": {
+        "not_sarcastic": 458,
+        "sarcastic": 326
+      },
+      "gold_distribution": {
+        "not_sarcastic": 473,
+        "sarcastic": 311
+      }
+    },
+    "outputs/v2_sft": {
+      "n": 784,
+      "accuracy": 0.7104591836734694,
+      "precision": 0.6272727272727273,
+      "recall": 0.6655948553054662,
+      "f1": 0.6458658346333854,
+      "format_compliance": 1.0,
+      "avg_reasoning_lines": 2.0,
+      "pred_distribution": {
+        "not_sarcastic": 454,
+        "sarcastic": 330
+      },
+      "gold_distribution": {
+        "not_sarcastic": 473,
+        "sarcastic": 311
+      }
+    }
+  }
+}
