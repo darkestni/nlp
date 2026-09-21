@@ -50,7 +50,7 @@ GRPO 的关键是奖励设计。本项目设计了**多维奖励**（见 `train/
 
 ### 数据
 
-- **主数据集**：[SARC](https://github.com/sahithiraml/sarc-datasets)（Reddit 大规模讽刺语料，~530K 评论）或 [iSarcasm](https://github.com/sahithiraml/iSarcasm)（小而精、人工标注）。
+- **主数据集**：[SemEval-2018 Task 3](https://arxiv.org/abs/1804.06647) *Irony Detection in English Tweets*（train 2,862 / test 784，二分类；`data/make_semeval.py`）。数据管线兼容 SARC / iSarcasm 等语料，可在 config 中切换。
 - **数据流程**（见 `data/prepare_data.py`）：原始评论 → 清洗 → prompt 模板填充 → train/val/test 划分 → JSONL。
 - **合成数据路径**（可选，见 `data/synthesize.py`）：用大模型 API 对难例生成"带推理链的样例"，作为 SFT 冷启动数据——对应 JD "合成数据生成"职责。
 
@@ -110,16 +110,22 @@ bash scripts/run_all.sh
 
 ---
 
-## 实验记录
+## 实验记录（v2 · 2026-09，集群实跑）
 
-> 训练完成后在此填写。模板见 `results/experiment_template.md`。
+**配置**（`configs/v2_cluster.yaml`）：Qwen2.5-0.5B-Instruct · SFT 冷启动 → GRPO（TRL）· G=6 · 温度 1.0 · lr 1e-5 · 1 epoch ≈ 715 步 · 每 100 步存 checkpoint（`outputs/v2_grpo/checkpoint-100…715`）· 奖励权重 `answer_correct ×3.0` 主导。
 
-预期记录：
-- 训练前 baseline（zero-shot prompt）准确率 / F1
-- GRPO 训练后准确率 / F1
-- 训练 reward 曲线（`results/training_log.png`）
-- 消融：去掉 `reasoning_present` 奖励后的效果
-- case study：训前训后各 5 条对比
+**分阶段评测**（SemEval-2018 Task3 test，n=784；`results/v2_summary.json`）：
+
+| 阶段 | Accuracy | 讽刺类 F1 | 格式合规 |
+|------|---------:|---------:|---------:|
+| 零样本基线（单类塌缩，784 全预测多数类） | 0.6033 | 0.000 | 0% |
+| SFT 冷启动后 | 0.7105 | 0.646 | 100% |
+| + GRPO 715 步 | 0.7130 | 0.647 | 100% |
+
+- 零样本→SFT：破除单类塌缩、恢复双类分布，macro-F1（按混淆矩阵换算）0.38→0.70——**提升几乎全部来自 SFT 冷启动**。
+- SFT→GRPO：+0.0025，噪声量级。
+
+**训练动态复盘（诚实记录）**：`results/v2_grpo_trainer_state.json` 显示 GRPO 阶段 reward 恒为 0、`frac_reward_zero_std=1.0`（所有分组零方差→无优势信号）、补全长均值恒等于 `max_completion_length=384`——指向补全在写完 `<answer>` 前被截断（或奖励解析与模板不匹配），奖励从未触发；评测侧生成长度预算更宽、格式合规 100%，与该假设一致。**下一步**：提高训练期 `max_completion_length` 或压缩推理模板后复跑——分阶段 checkpoint 已保留，可直接归因。图表见 `results/figures/`（由本目录 JSON 直接生成，无硬编码数值）
 
 ---
 
@@ -138,7 +144,7 @@ bash scripts/run_all.sh
 
 - 方法思路启发：DeepSeek-R1 的「推理 + 强化学习」范式。
 - 训练框架：[HuggingFace TRL](https://github.com/huggingface/trl) GRPOTrainer。
-- 数据：SARC / iSarcasm 语料贡献者。
+- 数据：SemEval-2018 Task 3 组委会（Cynthia Van Hee 等）及语料贡献者。
 
 ---
 
